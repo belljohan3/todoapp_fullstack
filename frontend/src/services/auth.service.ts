@@ -1,20 +1,23 @@
-// auth.service.ts
-import { createDirectus, authentication, rest } from '@directus/sdk'
+import type { User } from '@/types'
+import { createDirectus, authentication, login, rest, createUser } from '@directus/sdk'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
 const api = createDirectus(import.meta.env.VITE_API_URL)
 
+// Login function
 export const signIn = async (email: string, password: string) => {
   try {
-    const response = await api.with(authentication('json')).with(rest()).login(email, password)
+    const response = await api
+      .with(authentication('json'))
+      .with(rest())
+      .request(login(email, password))
+
+    console.log('User is authenticated succesfully', response.access_token)
 
     if (response.access_token) {
-      api.with(authentication()).with(rest()).setToken(response.access_token)
-      return response.access_token
-    } else {
-      throw new Error('There is no token')
+      localStorage.setItem('userToken', response.access_token)
     }
   } catch (error) {
     console.log('Error during login:', error)
@@ -22,8 +25,25 @@ export const signIn = async (email: string, password: string) => {
   }
 }
 
+// Register function
+export const registerUser = async (user: User) => {
+  try {
+    const response = await api.with(rest()).request(
+      createUser({
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email,
+        password: user.password
+      })
+    )
+    console.log('Signup successful:', response)
+  } catch (error) {
+    console.error('Signup failed:', error)
+  }
+}
+
 export const signOut = async () => {
-  await api.with(authentication()).with(rest()).logout()
+  localStorage.clear()
   router?.push({ name: 'Login' })
   window.location.reload()
   console.log('User Disconnected')
@@ -31,6 +51,6 @@ export const signOut = async () => {
 
 export const isAuthenticated = (): boolean => {
   // Check if the user is authenticated
-  const token = localStorage.getItem('access_token')
+  const token = localStorage.getItem('userToken')
   return !!token // Convert to boolean
 }

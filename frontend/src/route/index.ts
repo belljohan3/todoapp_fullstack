@@ -1,10 +1,12 @@
 // router/index.ts
 
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
+import { isAuthenticated } from '@/services/auth.service'
+
 import LoginForm from '@/views/LoginView.vue'
 import DashboardView from '@/views/DashboardView.vue'
 import NotFound from '@/views/NotFound.vue'
-import { isAuthenticated } from '@/services/auth.service'
+import SignUpForm from '@/components/SignUpForm.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -18,6 +20,11 @@ const routes: Array<RouteRecordRaw> = [
     meta: {
       requiresAuth: false
     }
+  },
+  {
+    path: '/sign-up',
+    name: 'Sign Up',
+    component: SignUpForm
   },
   {
     path: '/dashboard',

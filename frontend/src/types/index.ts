@@ -22,5 +22,12 @@ export type DirectusCollections = {
 
 export type Tasks = {
   title: string
-  description?: string | null
+  description?: string
+}
+
+export type User = {
+  first_name: string
+  last_name: string
+  email: string
+  password: string
 }

@@ -36,7 +36,7 @@
 </template>
 
 <script lang="ts" setup>
-import { signIn } from '@/services/auth'
+import { signIn } from '../services/auth.service'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -47,10 +47,11 @@ const router = useRouter()
 const loginUser = async () => {
   try {
     await signIn(email.value, password.value)
-    router?.push({ name: 'Dashboard' })
     console.log('User connected. Redirecting to Dashboard...')
+    router?.push({ name: 'Dashboard' })
   } catch (error) {
-    console.log(error)
+    console.error('Error during login:', error)
+    // You might want to display an error message to the user here
   }
 }
 </script>

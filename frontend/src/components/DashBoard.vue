@@ -2,12 +2,13 @@
   <div>
     <div class="flex justify-between mb-4 bg-blue-100 p-4">
       <h1 class="text-2xl font-bold mb-4">TODO APP</h1>
-      <button class="bg-red-800 text-white px-4 rounded-xl" @click="signOut">Disconnect</button>
+      <button class="bg-red-800 text-white px-4 rounded-xl" @click.prevent="signOut">
+        Disconnect
+      </button>
     </div>
-
     <div v-if="isLoading">Loading...</div>
 
-    <div v-else-if="tasks.length === 0" class="px-12">
+    <div v-else-if="!tasks" class="px-12">
       <div class="flex justify-between mb-4">
         <h2 class="text-2xl font-bold mb-4">No Tasks for you</h2>
       </div>
@@ -20,7 +21,7 @@
           + Add a Task
         </button>
       </div>
-      <div v-for="task in datas" :key="task.id" class="bg-white p-4 rounded-lg shadow mb-4">
+      <div v-for="task in tasks" :key="task.id" class="bg-white p-4 rounded-lg shadow mb-4">
         <div class="flex justify-between items-center mb-2">
           <h2 class="text-lg font-semibold">{{ task.title }}</h2>
           <span
@@ -81,38 +82,37 @@
 </template>
 
 <script setup lang="ts">
-import axios from 'axios'
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { signOut } from '@/services/auth.service'
-import { createTask, fetchTask, deleteTask } from '@/services/task.service'
+import { createTask, fetchTasks } from '@/services/task.service'
+import type { Tasks } from '@/types'
 
 const isLoading = ref(true)
-let tasks = ref([])
+
 const isAddTaskModalOpen = ref(false)
+
+let tasks: Tasks = [{ title: '', description: '' }]
+
 const newTask = ref({
   title: '',
   description: ''
 })
 
 // Fetch tasks on mount
-if (document.readyState === 'complete') {
-  window.location.reload()
-}
+// if (document.readyState === 'complete') {
+//   window.location.reload()
+// }
 
-// onMounted(async () => {
-//   try {
-//     const response = await axios.get(`${import.meta.env.VITE_API_URL}/items/tasks`, {
-//       headers: {
-//         Authorization: `Bearer ${token}`
-//       }
-//     })
-//     tasks.value = response.data
-//   } catch (error) {
-//     console.error('Error fetching data:', error)
-//   } finally {
-//     isLoading.value = false
-//   }
-// })
+onMounted(async () => {
+  try {
+    const response = fetchTasks()
+    return response
+  } catch (error) {
+    console.error('Error fetching data:', error)
+  } finally {
+    isLoading.value = false
+  }
+})
 
 // Function to open add task modal
 const openAddTaskModal = () => {
@@ -127,7 +127,7 @@ const closeAddTaskModal = () => {
 // Function to add a new task
 const addTask = async () => {
   try {
-    createTask('task', {
+    createTask('tasks', {
       title: newTask.value.title,
       description: newTask.value.description
     })
